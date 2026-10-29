@@ -1,0 +1,526 @@
+<title>Klinika Pulsi</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: sticky header with role switch; each role gets its own working screen (summary on top, detail below) */
+:root{
+  --bg:#F2F4F7;--surface:#FFFFFF;--surface-2:#E8ECF2;--line:#D6DCE5;--fg:#121823;--muted:#5A6475;
+  --accent:#2457C5;--accent-ink:#FFFFFF;--accent-soft:#E2EAFA;
+  --s-royxat:#5F6E84;--s-kutmoqda:#A86D12;--s-qabulda:#2457C5;--s-tahlil:#7646B5;--s-tolov:#BD5317;--s-yakun:#2A7F52;
+  --danger:#C22F2F;--warn:#A86D12;--ok:#2A7F52;
+  --f-ui:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D121A;--surface:#141B26;--surface-2:#1C2532;--line:#2A3444;--fg:#E5E9EF;--muted:#94A0B2;
+  --accent:#7099EE;--accent-ink:#0D121A;--accent-soft:#1A2843;
+  --s-royxat:#97A5B9;--s-kutmoqda:#E2A94B;--s-qabulda:#7099EE;--s-tahlil:#B08AE8;--s-tolov:#EE8B52;--s-yakun:#5DC08B;
+  --danger:#F07474;--warn:#E2A94B;--ok:#5DC08B;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D121A;--surface:#141B26;--surface-2:#1C2532;--line:#2A3444;--fg:#E5E9EF;--muted:#94A0B2;
+  --accent:#7099EE;--accent-ink:#0D121A;--accent-soft:#1A2843;
+  --s-royxat:#97A5B9;--s-kutmoqda:#E2A94B;--s-qabulda:#7099EE;--s-tahlil:#B08AE8;--s-tolov:#EE8B52;--s-yakun:#5DC08B;
+  --danger:#F07474;--warn:#E2A94B;--ok:#5DC08B;color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-ui);font-size:14px;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input,select{font:inherit;color:inherit}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.hwrap{max-width:1280px;margin:0 auto;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.01em}
+.brand svg{flex:none}
+.tabs{display:flex;background:var(--surface-2);border-radius:999px;padding:3px;gap:2px}
+.tabs button{border:0;background:transparent;padding:7px 14px;border-radius:999px;cursor:pointer;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgb(0 0 0 / .12)}
+.tabs button:focus-visible,.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mode{margin-left:auto;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.mode.live .dot{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.mode.local .dot{background:var(--warn)}
+
+main{max-width:1280px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:20px}
+h1{font-size:22px;margin:0;letter-spacing:-.015em;text-wrap:balance}
+h2{font-size:13px;margin:0 0 10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.sub{color:var(--muted);margin:2px 0 0}
+.pagehead{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:20px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--surface);padding:14px 16px;display:grid;gap:4px}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font-family:var(--f-num);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .v small{font-size:13px;color:var(--muted);font-weight:500;margin-left:4px}
+.kpi.alert .v{color:var(--danger)}
+
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap;
+  color:var(--c,var(--muted));background:color-mix(in srgb,var(--c,var(--muted)) 13%,transparent)}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.plain::before{display:none}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.sm{padding:3px 9px;font-size:12px}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+.btn.danger{color:var(--danger)}
+.btn.armed{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+form.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;align-items:end}
+label{display:grid;gap:4px;font-size:12px;color:var(--muted);font-weight:500}
+input,select{border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:8px 10px;min-width:0;width:100%}
+
+table{width:100%;border-collapse:collapse}
+.tscroll{overflow-x:auto}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:500;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td .who{font-weight:600}
+td .meta{font-size:12px;color:var(--muted)}
+
+.alerts{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.alerts li{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 12px;border-radius:8px;
+  background:color-mix(in srgb,var(--c) 10%,transparent);border-left:3px solid var(--c)}
+.alerts .t{font-weight:600}
+.alerts .m{font-size:12px;color:var(--muted)}
+.alerts .d{font-family:var(--f-num);font-weight:600;color:var(--c)}
+.empty{color:var(--muted);padding:14px;text-align:center;border:1px dashed var(--line);border-radius:8px}
+
+.flowbar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--surface-2);margin:4px 0 14px}
+.flowbar span{background:var(--c);min-width:0}
+.legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.legend div{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.legend b{font-family:var(--f-num)}
+
+.board{display:grid;grid-template-columns:repeat(6,minmax(210px,1fr));gap:12px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--surface-2);border-radius:var(--r);padding:10px;display:flex;flex-direction:column;gap:8px;min-height:160px}
+.col h3{margin:0 0 2px;font-size:13px;display:flex;justify-content:space-between;align-items:center}
+.col h3 .chip{font-size:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px;display:grid;gap:6px;border-top:3px solid var(--c)}
+.card .top{display:flex;justify-content:space-between;gap:8px;align-items:start}
+.card .nm{font-weight:600;overflow-wrap:anywhere}
+.card .tm{font-family:var(--f-num);font-size:12px;color:var(--muted);white-space:nowrap}
+.card .tm.over{color:var(--danger);font-weight:600}
+.card .info{font-size:12px;color:var(--muted)}
+.card .acts{display:flex;gap:6px;justify-content:space-between}
+
+.avail{display:flex;flex-wrap:wrap;gap:8px}
+.avail .a{display:flex;align-items:center;gap:8px;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+
+.current{display:grid;gap:12px;padding:16px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--s-qabulda) 40%,var(--line));background:color-mix(in srgb,var(--s-qabulda) 7%,var(--surface))}
+.current .nm{font-size:20px;font-weight:700}
+.current .acts{display:flex;gap:8px;flex-wrap:wrap}
+.qlist{display:grid;gap:6px;margin:0;padding:0;list-style:none}
+.qlist li{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.qlist .pos{font-family:var(--f-num);color:var(--muted);width:22px}
+.qlist .grow{flex:1;min-width:0}
+.qlist .tm{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.qlist .tm.over{color:var(--danger);font-weight:600}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:500;z-index:20;max-width:calc(100% - 32px)}
+.banner{padding:10px 14px;border-radius:8px;background:color-mix(in srgb,var(--warn) 12%,transparent);border:1px solid color-mix(in srgb,var(--warn) 35%,transparent);font-size:13px}
+@media (prefers-reduced-motion:no-preference){.card,.qlist li,.alerts li{transition:border-color .2s}}
+@media (max-width:560px){.mode{margin-left:0;width:100%}.tabs{width:100%}.tabs button{flex:1;padding:7px 6px}}
+</style>
+
+<header>
+  <div class="hwrap">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><rect width="26" height="26" rx="7" fill="var(--accent)"/><path d="M4 14h4.5l2-5 3.5 10 2.5-6.5 1.5 1.5H22" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Klinika Pulsi
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Rol">
+      <button role="tab" data-view="boshliq" id="tab-boshliq">Boshliq</button>
+      <button role="tab" data-view="vrach" id="tab-vrach">Vrach</button>
+      <button role="tab" data-view="menejer" id="tab-menejer">Menejer</button>
+    </nav>
+    <div class="mode" id="mode"><span class="dot"></span><span id="modeText">Ulanmoqda…</span></div>
+  </div>
+</header>
+<main id="app"></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const STAGES=[["royxat","Roʻyxatga olindi"],["kutmoqda","Kutmoqda"],["qabulda","Qabulda"],["tahlil","Tahlil / UZI"],["tolov","Toʻlov"],["yakun","Yakunlandi"]];
+const SL=Object.fromEntries(STAGES);
+const SKEYS=STAGES.map(s=>s[0]);
+const LIMIT={royxat:10,kutmoqda:30,tahlil:60,tolov:15}; // daqiqa: shundan oshsa ogohlantirish
+const ROLES={boshliq:"Klinika boshligʻi",vrach:"Vrach",menejer:"Menejer"};
+const TSTAT={yangi:["Yangi","var(--s-royxat)"],jarayonda:["Jarayonda","var(--s-qabulda)"],bajarildi:["Bajarildi","var(--s-yakun)"]};
+const PRIO={oddiy:["Oddiy","var(--s-royxat)"],muhim:["Muhim","var(--warn)"],shoshilinch:["Shoshilinch","var(--danger)"]};
+const COLS=["staff","patients","tasks"];
+
+const S={staff:[],patients:[],tasks:[]};
+let db=null, mode="loading";
+const local={staff:new Map(),patients:new Map(),tasks:new Map()};
+
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+let view=["boshliq","vrach","menejer"].includes(location.hash.slice(1))?location.hash.slice(1):(ls("kp.view")||"boshliq");
+let meDoc=ls("kp.doc")||"";
+let builtView=null;
+
+/* ---------- yordamchilar ---------- */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pad=n=>String(n).padStart(2,"0");
+const dayKey=ms=>{const d=new Date(ms);return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())};
+const today=()=>dayKey(Date.now());
+const minsSince=ms=>Math.max(0,Math.floor((Date.now()-(ms||Date.now()))/60000));
+function dur(m){if(m<60)return m+" daq";const h=Math.floor(m/60);return h+" soat "+(m%60?pad(m%60)+" daq":"")}
+const money=n=>(Math.round(n||0)).toLocaleString("ru-RU").replace(/,/g," ")+" soʻm";
+const clock=ms=>{const d=new Date(ms);return pad(d.getHours())+":"+pad(d.getMinutes())};
+const chip=(label,color,plain)=>`<span class="chip${plain?" plain":""}" style="--c:${color}">${esc(label)}</span>`;
+const stageChip=s=>chip(SL[s]||s,`var(--s-${s})`);
+const staffById=id=>S.staff.find(s=>s.id===id);
+const nameOf=id=>staffById(id)?.name||"—";
+const doctors=()=>S.staff.filter(s=>s.role==="vrach").sort((a,b)=>a.name.localeCompare(b.name));
+const isToday=p=>dayKey(p.createdAt)===today();
+const isActive=p=>p.stage!=="yakun";
+const overLimit=p=>LIMIT[p.stage]!=null&&minsSince(p.stageAt)>LIMIT[p.stage];
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const qabulMins=p=>p.qabulStart&&p.qabulEnd?Math.round((p.qabulEnd-p.qabulStart)/60000):null;
+
+let toastT;
+function toast(msg){const t=$("#toast");t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+function errText(e){
+  const c=e&&e.code;
+  if(c==="invalid_argument")return "Saqlanmadi: sizda oʻzgartirish huquqi yoʻq";
+  if(c==="quota_exceeded")return "Saqlanmadi: maʼlumotlar bazasi toʻlgan";
+  if(c==="resource_exhausted")return "Juda tez: bir soniyadan keyin qayta urinib koʻring";
+  return "Saqlanmadi. Internetni tekshirib, qayta urinib koʻring";
+}
+
+/* ---------- saqlash qatlami: db yoki shu oynadagi xotira ---------- */
+function syncLocal(col){S[col]=[...local[col]].map(([id,d])=>({id,...d}));render()}
+async function addDoc(col,data){
+  try{
+    if(db){await db.collection(col).add(data);return true}
+    local[col].set(Math.random().toString(36).slice(2,10),{...data});syncLocal(col);return true;
+  }catch(e){toast(errText(e));return false}
+}
+async function patchDoc(col,id,data){
+  try{
+    if(db){await db.doc(col+"/"+id).update(data);return true}
+    Object.assign(local[col].get(id),data);syncLocal(col);return true;
+  }catch(e){toast(errText(e));return false}
+}
+async function delDoc(col,id){
+  try{if(db){await db.doc(col+"/"+id).delete();return true}local[col].delete(id);syncLocal(col);return true}
+  catch(e){toast(errText(e));return false}
+}
+
+function moveStage(p,to){
+  if(!SKEYS.includes(to)||to===p.stage)return;
+  const now=Date.now(),d={stage:to,stageAt:now};
+  if(to==="qabulda")d.qabulStart=now,d.qabulEnd=null;
+  if(p.stage==="qabulda")d.qabulEnd=now;
+  if(to==="yakun"){d.endedAt=now;if(p.stage==="tolov")d.paid=true}
+  return patchDoc("patients",p.id,d);
+}
+
+/* ---------- ekran qobiqlari (formalar bir marta chiziladi, maʼlumot qismi yangilanadi) ---------- */
+function shell(){
+  const app=$("#app");
+  if(view==="boshliq")app.innerHTML=`
+    <div class="pagehead"><div><h1>Klinika holati</h1><p class="sub" id="b-date"></p></div></div>
+    <div id="b-banner"></div>
+    <section class="kpis" id="b-kpi" aria-label="Bugungi koʻrsatkichlar"></section>
+    <div class="grid2">
+      <section class="panel"><h2>Ogohlantirishlar</h2><ul class="alerts" id="b-alerts"></ul></section>
+      <section class="panel"><h2>Bemorlar oqimi</h2><div id="b-flow"></div></section>
+    </div>
+    <section class="panel"><h2>Vrachlar</h2><div class="tscroll" id="b-docs"></div></section>
+    <section class="panel"><h2>Ochiq topshiriqlar</h2><div class="tscroll" id="b-tasks"></div></section>
+    <section class="panel"><h2>Xodimlar</h2>
+      <form class="row" id="f-staff" autocomplete="off" style="margin-bottom:14px">
+        <label for="st-name">Ism familiya<input id="st-name" required maxlength="60" placeholder="Masalan, Dr. Aziz Saidov"></label>
+        <label for="st-role">Rol<select id="st-role">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}"${k==="vrach"?" selected":""}>${v}</option>`).join("")}</select></label>
+        <label for="st-spec">Mutaxassislik / lavozim<input id="st-spec" maxlength="40" placeholder="Kardiolog"></label>
+        <label for="st-room">Xona<input id="st-room" maxlength="10" placeholder="204"></label>
+        <button class="btn primary" type="submit">Xodim qoʻshish</button>
+      </form>
+      <div class="tscroll" id="b-staff"></div>
+    </section>`;
+  if(view==="vrach")app.innerHTML=`
+    <div class="pagehead">
+      <div><h1 id="v-title">Mening qabulim</h1><p class="sub" id="v-sub"></p></div>
+      <label for="v-doc" style="min-width:220px">Vrach<select id="v-doc" class="doc-select"></select></label>
+    </div>
+    <div id="v-banner"></div>
+    <section class="kpis" id="v-stats"></section>
+    <div class="grid2">
+      <section class="panel"><h2>Hozir qabulda</h2><div id="v-cur"></div></section>
+      <section class="panel"><h2>Navbat</h2><ul class="qlist" id="v-queue"></ul></section>
+    </div>
+    <div class="grid2">
+      <section class="panel"><h2>Tahlil natijasi kutilmoqda</h2><ul class="qlist" id="v-lab"></ul></section>
+      <section class="panel"><h2>Mening topshiriqlarim</h2><ul class="qlist" id="v-tasks"></ul></section>
+    </div>`;
+  if(view==="menejer")app.innerHTML=`
+    <div class="pagehead"><div><h1>Bemorlar oqimi</h1><p class="sub">Bemorni roʻyxatga oling va bosqichdan bosqichga oʻtkazing</p></div></div>
+    <div id="m-banner"></div>
+    <section class="panel"><h2>Yangi bemor</h2>
+      <form class="row" id="f-pat" autocomplete="off">
+        <label for="p-name">Bemor ismi<input id="p-name" required maxlength="60" placeholder="Ism familiya"></label>
+        <label for="p-phone">Telefon<input id="p-phone" inputmode="tel" maxlength="20" placeholder="+998 90 123 45 67"></label>
+        <label for="p-doc">Vrach<select id="p-doc" class="doc-select" required></select></label>
+        <label for="p-svc">Xizmat<input id="p-svc" maxlength="50" placeholder="Konsultatsiya"></label>
+        <label for="p-price">Narx, soʻm<input id="p-price" type="number" min="0" step="1000" placeholder="150000"></label>
+        <button class="btn primary" type="submit">Navbatga qoʻshish</button>
+      </form>
+    </section>
+    <section><h2>Vrachlar bandligi</h2><div class="avail" id="m-avail"></div></section>
+    <section><div class="board" id="m-board"></div></section>
+    <section class="panel"><h2>Topshiriqlar</h2>
+      <form class="row" id="f-task" autocomplete="off" style="margin-bottom:14px">
+        <label for="t-title" style="grid-column:span 2">Topshiriq<input id="t-title" required maxlength="120" placeholder="Masalan, UZI apparatiga servis chaqirish"></label>
+        <label for="t-who">Kimga<select id="t-who" class="staff-select" required></select></label>
+        <label for="t-due">Muddat<input id="t-due" type="date"></label>
+        <label for="t-prio">Muhimlik<select id="t-prio">${Object.entries(PRIO).map(([k,v])=>`<option value="${k}">${v[0]}</option>`).join("")}</select></label>
+        <button class="btn primary" type="submit">Topshiriq berish</button>
+      </form>
+      <div class="tscroll" id="m-tasks"></div>
+    </section>`;
+  builtView=view;
+}
+
+function fillSelects(){
+  const docs=doctors();
+  document.querySelectorAll("select.doc-select").forEach(sel=>{
+    const sig=docs.map(d=>d.id+d.name).join("|");
+    if(sel.dataset.sig===sig)return;
+    const keep=sel.value||(sel.id==="v-doc"?meDoc:"");
+    sel.innerHTML=docs.length?docs.map(d=>`<option value="${esc(d.id)}">${esc(d.name)}${d.spec?" · "+esc(d.spec):""}</option>`).join(""):`<option value="">Avval vrach qoʻshing</option>`;
+    if(docs.some(d=>d.id===keep))sel.value=keep;
+    sel.dataset.sig=sig;
+  });
+  document.querySelectorAll("select.staff-select").forEach(sel=>{
+    const list=[...S.staff].sort((a,b)=>a.name.localeCompare(b.name));
+    const sig=list.map(d=>d.id+d.name).join("|");
+    if(sel.dataset.sig===sig)return;
+    const keep=sel.value;
+    sel.innerHTML=list.map(d=>`<option value="${esc(d.id)}">${esc(d.name)} · ${esc(ROLES[d.role]||"")}</option>`).join("");
+    if(list.some(d=>d.id===keep))sel.value=keep;
+    sel.dataset.sig=sig;
+  });
+}
+
+/* ---------- hisob-kitob ---------- */
+function board(){return S.patients.filter(p=>isToday(p)||isActive(p))}
+function alerts(){
+  const out=[];
+  S.patients.filter(p=>isActive(p)&&overLimit(p)).forEach(p=>{
+    const m=minsSince(p.stageAt),hard=m>LIMIT[p.stage]*2;
+    out.push({m,c:hard?"var(--danger)":"var(--warn)",t:`${p.name}: ${SL[p.stage].toLowerCase()} bosqichida`,s:`Vrach: ${nameOf(p.doctorId)} · meʼyor ${LIMIT[p.stage]} daq`,d:dur(m)});
+  });
+  S.tasks.filter(t=>t.status!=="bajarildi"&&t.due&&t.due<today()).forEach(t=>{
+    const days=Math.round((new Date(today())-new Date(t.due))/864e5);
+    out.push({m:days*1440,c:"var(--danger)",t:`Muddati oʻtgan: ${t.title}`,s:`Masʼul: ${nameOf(t.assigneeId)}`,d:days+" kun"});
+  });
+  return out.sort((a,b)=>b.m-a.m);
+}
+function docStats(d){
+  const mine=S.patients.filter(p=>p.doctorId===d.id);
+  const t=mine.filter(isToday);
+  const cur=mine.find(p=>p.stage==="qabulda");
+  const queue=mine.filter(p=>p.stage==="kutmoqda"||p.stage==="royxat");
+  const seen=t.filter(p=>p.qabulEnd);
+  const times=seen.map(qabulMins).filter(x=>x!=null);
+  return{cur,queue,seen:seen.length,avg:Math.round(avg(times)),rev:t.filter(p=>p.paid).reduce((s,p)=>s+(+p.price||0),0)};
+}
+
+/* ---------- chizish ---------- */
+function banner(id){
+  const el=$(id);if(!el)return;
+  el.innerHTML=mode==="local"?`<div class="banner">Namuna rejimi: bu oynada saqlash ulanmagan, kiritilgan maʼlumotlar sahifa yopilganda oʻchadi. Doimiy ishlash uchun Claude hisobiga kirgan holda oching.</div>`:"";
+}
+function renderBoshliq(){
+  $("#b-date").textContent=new Date().toLocaleDateString("uz-UZ",{weekday:"long",day:"numeric",month:"long"})+" · "+clock(Date.now())+" holatiga";
+  banner("#b-banner");
+  const t=S.patients.filter(isToday),act=S.patients.filter(isActive);
+  const waiting=act.filter(p=>p.stage==="kutmoqda"||p.stage==="royxat").length;
+  const al=alerts();
+  const rev=t.filter(p=>p.paid).reduce((s,p)=>s+(+p.price||0),0);
+  const open=S.tasks.filter(x=>x.status!=="bajarildi").length;
+  $("#b-kpi").innerHTML=[
+    ["Bugun kelgan",t.length],["Kutmoqda",waiting],["Qabulda",act.filter(p=>p.stage==="qabulda").length],
+    ["Yakunlandi",t.filter(p=>p.stage==="yakun").length],["Bugungi tushum",Math.round(rev/1000).toLocaleString("ru-RU"),"ming soʻm"],
+    ["Ochiq topshiriq",open],["Ogohlantirish",al.length,"",al.length>0]
+  ].map(([l,v,u,bad])=>`<div class="kpi${bad?" alert":""}"><span class="l">${l}</span><span class="v">${v}${u?`<small>${u}</small>`:""}</span></div>`).join("");
+
+  $("#b-alerts").innerHTML=al.length?al.slice(0,8).map(a=>`<li style="--c:${a.c}"><span class="chip plain" style="--c:${a.c}">!</span><div><div class="t">${esc(a.t)}</div><div class="m">${esc(a.s)}</div></div><span class="d">${a.d}</span></li>`).join("")
+    :`<li class="empty" style="display:block">Hammasi meʼyorida: hech kim belgilangan vaqtdan ortiq kutmayapti</li>`;
+
+  const b=board(),cnt=Object.fromEntries(SKEYS.map(k=>[k,b.filter(p=>p.stage===k).length])),tot=b.length||1;
+  $("#b-flow").innerHTML=`<div class="flowbar" role="img" aria-label="Bosqichlar boʻyicha taqsimot">${SKEYS.map(k=>cnt[k]?`<span style="--c:var(--s-${k});flex:${cnt[k]/tot}" title="${SL[k]}: ${cnt[k]}"></span>`:"").join("")}</div>
+    <div class="legend">${SKEYS.map(k=>`<div>${stageChip(k)}<b>${cnt[k]}</b></div>`).join("")}</div>`;
+
+  const docs=doctors();
+  $("#b-docs").innerHTML=docs.length?`<table><thead><tr><th>Vrach</th><th>Holat</th><th>Navbatda</th><th>Koʻrildi</th><th>Oʻrtacha qabul</th><th>Tushum</th></tr></thead><tbody>${
+    docs.map(d=>{const s=docStats(d);return`<tr><td><div class="who">${esc(d.name)}</div><div class="meta">${esc(d.spec||"")}${d.room?" · "+esc(d.room)+"-xona":""}</div></td>
+      <td>${s.cur?chip("Band: "+s.cur.name+" · "+dur(minsSince(s.cur.qabulStart)),"var(--s-qabulda)"):chip("Boʻsh","var(--s-yakun)")}</td>
+      <td class="num">${s.queue.length}</td><td class="num">${s.seen}</td><td class="num">${s.seen?s.avg+" daq":"—"}</td><td class="num">${money(s.rev)}</td></tr>`}).join("")
+  }</tbody></table>`:`<div class="empty">Vrachlar hali qoʻshilmagan. Pastdagi “Xodimlar” boʻlimidan qoʻshing.</div>`;
+
+  $("#b-tasks").innerHTML=taskTable(S.tasks.filter(x=>x.status!=="bajarildi"),false);
+
+  const st=[...S.staff].sort((a,b)=>a.role.localeCompare(b.role)||a.name.localeCompare(b.name));
+  $("#b-staff").innerHTML=st.length?`<table><thead><tr><th>Xodim</th><th>Rol</th><th>Xona</th><th></th></tr></thead><tbody>${
+    st.map(s=>`<tr><td><div class="who">${esc(s.name)}</div><div class="meta">${esc(s.spec||"")}</div></td><td>${chip(ROLES[s.role]||s.role,s.role==="vrach"?"var(--s-qabulda)":s.role==="boshliq"?"var(--s-tahlil)":"var(--s-tolov)")}</td><td class="num">${esc(s.room||"—")}</td>
+      <td style="text-align:right"><button class="btn sm ghost danger" data-act="del" data-col="staff" data-id="${esc(s.id)}">Oʻchirish</button></td></tr>`).join("")
+  }</tbody></table>`:`<div class="empty">Hali xodim yoʻq. Yuqoridagi formadan birinchisini qoʻshing.</div>`;
+}
+
+function taskTable(list,withActions){
+  if(!list.length)return`<div class="empty">Ochiq topshiriq yoʻq</div>`;
+  const ord={shoshilinch:0,muhim:1,oddiy:2};
+  list=[...list].sort((a,b)=>(a.status==="bajarildi")-(b.status==="bajarildi")||ord[a.priority]-ord[b.priority]||(a.due||"9").localeCompare(b.due||"9"));
+  return`<table><thead><tr><th>Topshiriq</th><th>Masʼul</th><th>Muddat</th><th>Muhimlik</th><th>Holat</th>${withActions?"<th></th>":""}</tr></thead><tbody>${
+    list.map(t=>{const late=t.status!=="bajarildi"&&t.due&&t.due<today();const p=PRIO[t.priority]||PRIO.oddiy,s=TSTAT[t.status]||TSTAT.yangi;
+      return`<tr><td><div class="who">${esc(t.title)}</div><div class="meta">Berildi ${clock(t.createdAt)}, ${dayKey(t.createdAt)===today()?"bugun":dayKey(t.createdAt)}</div></td><td>${esc(nameOf(t.assigneeId))}</td>
+      <td class="num" style="${late?"color:var(--danger);font-weight:600":""}">${t.due?esc(t.due):"—"}</td><td>${chip(p[0],p[1])}</td><td>${chip(s[0],s[1])}</td>
+      ${withActions?`<td style="text-align:right;white-space:nowrap">${taskBtns(t)} <button class="btn sm ghost danger" data-act="del" data-col="tasks" data-id="${esc(t.id)}">Oʻchirish</button></td>`:""}</tr>`}).join("")
+  }</tbody></table>`;
+}
+function taskBtns(t){
+  if(t.status==="yangi")return`<button class="btn sm" data-act="task" data-id="${esc(t.id)}" data-to="jarayonda">Boshlash</button>`;
+  if(t.status==="jarayonda")return`<button class="btn sm primary" data-act="task" data-id="${esc(t.id)}" data-to="bajarildi">Bajarildi</button>`;
+  return`<button class="btn sm ghost" data-act="task" data-id="${esc(t.id)}" data-to="jarayonda">Qayta ochish</button>`;
+}
+
+function renderVrach(){
+  banner("#v-banner");
+  const sel=$("#v-doc");
+  if(sel.value&&sel.value!==meDoc){meDoc=sel.value;ls("kp.doc",meDoc)}
+  const d=staffById(meDoc);
+  if(!d){
+    $("#v-sub").textContent="";
+    ["#v-stats","#v-cur","#v-queue","#v-lab","#v-tasks"].forEach(s=>$(s).innerHTML="");
+    $("#v-cur").innerHTML=`<div class="empty">Vrachlar roʻyxati boʻsh. Boshliq ekranidagi “Xodimlar” boʻlimidan vrach qoʻshing.</div>`;
+    return;
+  }
+  $("#v-title").textContent=d.name;
+  $("#v-sub").textContent=[d.spec,d.room&&d.room+"-xona"].filter(Boolean).join(" · ");
+  const s=docStats(d);
+  $("#v-stats").innerHTML=[["Navbatda",s.queue.length],["Bugun koʻrildi",s.seen],["Oʻrtacha qabul",s.seen?s.avg:"—",s.seen?"daq":""],["Bugungi tushum",Math.round(s.rev/1000).toLocaleString("ru-RU"),"ming soʻm"]]
+    .map(([l,v,u])=>`<div class="kpi"><span class="l">${l}</span><span class="v">${v}${u?`<small>${u}</small>`:""}</span></div>`).join("");
+  const c=s.cur;
+  $("#v-cur").innerHTML=c?`<div class="current">
+      <div><div class="nm">${esc(c.name)}</div><div class="sub">${esc(c.service||"Qabul")}${c.phone?" · "+esc(c.phone):""}</div></div>
+      <div>${chip("Qabulda "+dur(minsSince(c.qabulStart)),"var(--s-qabulda)")}</div>
+      <div class="acts">
+        <button class="btn" data-act="move" data-id="${esc(c.id)}" data-to="tahlil">Tahlil / UZIga yuborish</button>
+        <button class="btn primary" data-act="move" data-id="${esc(c.id)}" data-to="tolov">Qabulni tugatish → toʻlov</button>
+      </div></div>`
+    :`<div class="empty">Hozir qabulda hech kim yoʻq${s.queue.length?". Navbatdagi bemorni qabulga oling.":""}</div>`;
+  const q=[...s.queue].sort((a,b)=>a.stageAt-b.stageAt);
+  $("#v-queue").innerHTML=q.length?q.map((p,i)=>`<li><span class="pos">${i+1}</span><div class="grow"><div class="who" style="font-weight:600">${esc(p.name)}</div><div class="meta" style="font-size:12px;color:var(--muted)">${esc(p.service||"Qabul")}${p.returned?" · tahlildan qaytgan":""}</div></div>
+      <span class="tm${overLimit(p)?" over":""}">${dur(minsSince(p.stageAt))}</span>
+      <button class="btn sm primary" data-act="move" data-id="${esc(p.id)}" data-to="qabulda" ${c?"disabled title=\"Avval joriy qabulni tugating\"":""}>Qabulga olish</button></li>`).join("")
+    :`<li class="empty" style="display:block">Navbat boʻsh</li>`;
+  const lab=S.patients.filter(p=>p.doctorId===d.id&&p.stage==="tahlil").sort((a,b)=>a.stageAt-b.stageAt);
+  $("#v-lab").innerHTML=lab.length?lab.map(p=>`<li><div class="grow"><div style="font-weight:600">${esc(p.name)}</div><div style="font-size:12px;color:var(--muted)">${esc(p.service||"")}</div></div>
+      <span class="tm${overLimit(p)?" over":""}">${dur(minsSince(p.stageAt))}</span>
+      <button class="btn sm" data-act="return" data-id="${esc(p.id)}">Natija tayyor → navbatga</button></li>`).join("")
+    :`<li class="empty" style="display:block">Tahlilda bemor yoʻq</li>`;
+  const mt=S.tasks.filter(t=>t.assigneeId===d.id&&(t.status!=="bajarildi"||dayKey(t.doneAt||0)===today()));
+  $("#v-tasks").innerHTML=mt.length?mt.map(t=>{const p=PRIO[t.priority]||PRIO.oddiy;const late=t.status!=="bajarildi"&&t.due&&t.due<today();
+      return`<li><div class="grow"><div style="font-weight:600;${t.status==="bajarildi"?"text-decoration:line-through;color:var(--muted)":""}">${esc(t.title)}</div>
+      <div style="font-size:12px;color:${late?"var(--danger)":"var(--muted)"}">${t.due?"Muddat: "+esc(t.due):"Muddatsiz"} · ${p[0]}</div></div>${taskBtns(t)}</li>`}).join("")
+    :`<li class="empty" style="display:block">Sizga topshiriq berilmagan</li>`;
+}
+
+function renderMenejer(){
+  banner("#m-banner");
+  const docs=doctors();
+  $("#m-avail").innerHTML=docs.length?docs.map(d=>{const s=docStats(d);return`<div class="a"><div><div style="font-weight:600">${esc(d.name)}</div><div style="font-size:12px;color:var(--muted)">navbatda ${s.queue.length}</div></div>${s.cur?chip("Band","var(--s-qabulda)"):chip("Boʻsh","var(--s-yakun)")}</div>`}).join("")
+    :`<div class="empty">Vrach yoʻq. Boshliq ekranida qoʻshing.</div>`;
+  const b=board();
+  $("#m-board").innerHTML=STAGES.map(([k,l],i)=>{
+    const list=b.filter(p=>p.stage===k).sort((x,y)=>x.stageAt-y.stageAt);
+    return`<div class="col" aria-label="${l}"><h3>${stageChip(k)}<span class="num">${list.length}</span></h3>${
+      list.map(p=>{const m=minsSince(p.stageAt);return`<article class="card" style="--c:var(--s-${k})">
+        <div class="top"><span class="nm">${esc(p.name)}</span><span class="tm${overLimit(p)?" over":""}">${k==="yakun"?clock(p.endedAt||p.stageAt):dur(m)}</span></div>
+        <div class="info">${esc(nameOf(p.doctorId))}<br>${esc(p.service||"Qabul")}${p.price?" · "+money(p.price):""}${p.paid?" · toʻlangan":""}</div>
+        <div class="acts">
+          <button class="btn sm ghost" data-act="move" data-id="${esc(p.id)}" data-to="${SKEYS[i-1]||""}" ${i===0?"disabled":""} aria-label="Oldingi bosqich">‹ Orqaga</button>
+          ${k==="tolov"?`<button class="btn sm primary" data-act="move" data-id="${esc(p.id)}" data-to="yakun">Toʻlandi</button>`
+            :k==="yakun"?`<button class="btn sm ghost danger" data-act="del" data-col="patients" data-id="${esc(p.id)}">Oʻchirish</button>`
+            :`<button class="btn sm" data-act="move" data-id="${esc(p.id)}" data-to="${SKEYS[i+1]}">${SL[SKEYS[i+1]]} ›</button>`}
+        </div></article>`}).join("")||`<div class="info" style="color:var(--muted);font-size:12px;padding:4px">Boʻsh</div>`
+    }</div>`}).join("");
+  $("#m-tasks").innerHTML=taskTable(S.tasks.filter(t=>t.status!=="bajarildi"||dayKey(t.doneAt||0)===today()),true);
+}
+
+function render(){
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===view));
+  const m=$("#mode");m.className="mode "+(mode==="db"?"live":mode==="local"?"local":"");
+  $("#modeText").textContent=mode==="db"?"Jonli: oʻzgarishlar hammaga koʻrinadi":mode==="local"?"Namuna rejimi: saqlanmaydi":"Ulanmoqda…";
+  if(builtView!==view)shell();
+  fillSelects();
+  if(view==="boshliq")renderBoshliq();
+  if(view==="vrach")renderVrach();
+  if(view==="menejer")renderMenejer();
+}
+
+/* ---------- hodisalar ---------- */
+document.addEventListener("click",async e=>{
+  const tab=e.target.closest("[data-view]");
+  if(tab){view=tab.dataset.view;ls("kp.view",view);try{history.replaceState(null,"","#"+view)}catch(_){}render();return}
+  const b=e.target.closest("[data-act]");if(!b||b.disabled)return;
+  const {act,id,to,col}=b.dataset;
+  if(act==="move"){const p=S.patients.find(x=>x.id===id);if(p&&to){b.disabled=true;await moveStage(p,to)}}
+  if(act==="return"){const p=S.patients.find(x=>x.id===id);if(p){b.disabled=true;await moveStage(p,"kutmoqda");patchDoc("patients",id,{returned:true})}}
+  if(act==="task"){b.disabled=true;await patchDoc("tasks",id,{status:to,doneAt:to==="bajarildi"?Date.now():null})}
+  if(act==="del"){
+    if(!b.classList.contains("armed")){b.classList.add("armed");b.textContent="Tasdiqlang";setTimeout(()=>{if(b.isConnected){b.classList.remove("armed");b.textContent="Oʻchirish"}},3000);return}
+    b.disabled=true;if(await delDoc(col,id))toast("Oʻchirildi");
+  }
+});
+document.addEventListener("change",e=>{if(e.target.id==="v-doc"){meDoc=e.target.value;ls("kp.doc",meDoc);render()}});
+document.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const f=e.target,btn=f.querySelector("button[type=submit]");btn.disabled=true;
+  try{
+    if(f.id==="f-staff"){
+      const name=$("#st-name").value.trim();if(!name)return;
+      if(await addDoc("staff",{name,role:$("#st-role").value,spec:$("#st-spec").value.trim(),room:$("#st-room").value.trim(),createdAt:Date.now()})){f.reset();$("#st-role").value="vrach";toast("Xodim qoʻshildi")}
+    }
+    if(f.id==="f-pat"){
+      const name=$("#p-name").value.trim(),doc=$("#p-doc").value;
+      if(!doc){toast("Avval Boshliq ekranida vrach qoʻshing");return}
+      const now=Date.now();
+      if(await addDoc("patients",{name,phone:$("#p-phone").value.trim(),doctorId:doc,service:$("#p-svc").value.trim()||"Konsultatsiya",price:+$("#p-price").value||0,paid:false,stage:"kutmoqda",createdAt:now,stageAt:now})){
+        f.reset();$("#p-doc").value=doc;toast(name+" navbatga qoʻshildi");$("#p-name").focus()}
+    }
+    if(f.id==="f-task"){
+      const who=$("#t-who").value;if(!who){toast("Avval xodim qoʻshing");return}
+      if(await addDoc("tasks",{title:$("#t-title").value.trim(),assigneeId:who,due:$("#t-due").value||"",priority:$("#t-prio").value,status:"yangi",createdAt:Date.now()})){
+        f.reset();toast("Topshiriq berildi")}
+    }
+  }finally{btn.disabled=false}
+});
+
+/* ---------- ishga tushirish ---------- */
+render();
+setInterval(render,30000); // kutish vaqtlari yangilanib tursin (faqat chizish, yozuv yoʻq)
+(async()=>{
+  try{db=window.claude?await window.claude.use("db"):null}catch(_){db=null}
+  if(!db){mode="local";render();return}
+  mode="db";
+  COLS.forEach(col=>db.collection(col).onSnapshot(
+    snap=>{S[col]=snap.docs.map(d=>({id:d.id,...d.data()}));render()},
+    err=>toast(err&&err.code==="revoked"?"Kirish huquqi oʻzgardi":"Maʼlumot oqimi uzildi, sahifani yangilang")
+  ));
+  render();
+})();
+</script>
